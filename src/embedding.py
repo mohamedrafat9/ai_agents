@@ -1,4 +1,4 @@
-from .test import ch
+from .test import create_chunks as ch
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
 
@@ -11,7 +11,8 @@ embedding_model = HuggingFaceEmbeddings(
 docsearch = Chroma.from_documents(
     documents=chunk1,
     embedding=embedding_model,
-    collection_name="langchain_docs"
+    collection_name="langchain_docs",
+    persist_directory="./chroma_db"
 )
 
 query = "LangChain"
@@ -29,3 +30,18 @@ for i, doc in enumerate(docs, start=1):
 
     print("\nMetadata:")
     print(doc.metadata)
+
+collection = docsearch._collection
+
+data = collection.get(
+    include=["embeddings", "documents", "metadatas"]
+)
+
+print("Document:")
+print(data["documents"][0])
+
+print("\nEmbedding:")
+print(data["embeddings"][0])
+
+print("\nMetadata:")
+print(data["metadatas"][0])
