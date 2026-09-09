@@ -1,2 +1,3 @@
 python -m pip check 
 python -m folder.file
+python -m mathasset.Math_assis
