@@ -5,6 +5,7 @@ from langchain_core.messages import HumanMessage, ToolMessage
 from langchain.tools import tool
 import sys
 from pathlib import Path
+from src.llm.factory import get_llm
 from config import get_settings
 settings = get_settings()
 
@@ -13,12 +14,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-llm = ChatOpenRouter(
-    model=settings.openrouter_model,
-    api_key=settings.openrouter_api_key,
-    temperature=0.7,
-    max_tokens=500
-)
+llm = get_llm()
 @tool # generate a structured schema for the tool then the llm fills the schema with the required arguments and invokes the tool
 def add_numbers(numbers: list[float],abs:bool=False) -> float:
     """Add all numbers in the provided list."""
