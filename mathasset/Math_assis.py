@@ -1,7 +1,5 @@
 from langchain_openrouter import ChatOpenRouter
-#messeges
 from langchain_core.messages import HumanMessage, ToolMessage
-# from langchain.agents import Tool
 from langchain.tools import tool
 import sys
 from pathlib import Path
@@ -44,3 +42,7 @@ for tool_call in response.tool_calls:
     result = tools[tool_name].invoke(tool_args)
 
     print("Tool Result:", result)
+
+
+
+
