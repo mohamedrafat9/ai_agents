@@ -60,6 +60,14 @@ def get_llm(
             temperature=settings.llm_temperature,
             max_tokens=settings.llm_max_tokens,
         )
+    if selected_provider == "groq":
+        return ChatOpenAI(
+            model=model or settings.groq_model,
+            api_key=settings.groq_api_key,
+            base_url="https://api.groq.com/openai/v1",
+            temperature=settings.llm_temperature,
+            max_tokens=settings.llm_max_tokens,
+        )
 
     raise ValueError(
         f"Unsupported provider: {selected_provider}"
