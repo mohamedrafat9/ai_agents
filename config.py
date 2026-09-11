@@ -15,6 +15,8 @@ class Settings(BaseSettings):
 
     openrouter_api_key: str | None = None
     openrouter_model: str 
+    groq_api_key: str | None = None
+    groq_model: str 
 
     llm_temperature: float = 0.6
     llm_max_tokens: int = 1000
