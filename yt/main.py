@@ -19,6 +19,9 @@ yt_dpl_logger.setLevel(logging.ERROR)
 import arabic_reshaper
 from bidi.algorithm import get_display
 
+def fix_arabic(text: str) -> str:
+    reshaped_text = arabic_reshaper.reshape(text)
+    return get_display(reshaped_text)
 
 llm=get_llm(provider="groq")
 tools=[]
@@ -63,16 +66,36 @@ def fetch_transcript(video_id: str, language: str = "en") -> str:
 tools.append(fetch_transcript)
 
 
-def fix_arabic(text: str) -> str:
-    reshaped_text = arabic_reshaper.reshape(text)
-    return get_display(reshaped_text)
+@tool
+def search_youtube(query: str) -> List[Dict[str, str]]:
+    """
+    Search YouTube for videos matching the query.
+    
+    Args:
+        query (str): The search term to look for on YouTube
+        
+    Returns:
+        List of dictionaries containing video titles and IDs in format:
+        [{'title': 'Video Title', 'video_id': 'abc123'}, ...]
+        Returns error message if search fails
+    """
+    try:
+        s = Search(query)
+        return [
+            {
+                "title": yt.title,
+                "video_id": yt.video_id,
+                "url": f"https://youtu.be/{yt.video_id}"
+            }
+            for yt in s.results
+        ]
+    except Exception as e:
+        return f"Error: {str(e)}"
 
-# res=fetch_transcript.invoke({
-#     "video_id": "ZWdF4gHC214",
-#     "language": "ar"
-# })
-# print(fix_arabic(res))
 
+tools.append(search_youtube)
+
+print(search_youtube.invoke({"query":"Python programming"}))
 
 agent =create_agent(
         model=llm,
