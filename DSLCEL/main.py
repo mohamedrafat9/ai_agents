@@ -36,6 +36,8 @@ agent = create_agent(
 
 print("Ask questions about your datasets. Type 'exit' to quit.")
 
+conversation = []
+
 while True:
     try:
         user_input = input("You: ")
@@ -45,12 +47,15 @@ while True:
     if user_input.strip().lower() in {"exit", "quit"}:
         break
 
-    result = agent.invoke(
-        {
-            "messages": [
-                HumanMessage(content=user_input)
-            ]
-        }
+    conversation.append(
+        HumanMessage(content=user_input)
     )
-    print(f"Agent: {result['messages'][-1].content}")
+
+    result = agent.invoke({
+        "messages": conversation
+    })
+
+    conversation = result["messages"]
+
+    print(f"Agent: {conversation[-1].content}")
 
