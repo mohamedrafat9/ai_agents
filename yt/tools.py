@@ -4,8 +4,6 @@ from youtube_transcript_api import YouTubeTranscriptApi
 from langchain_core.tools import tool
 import yt_dlp
 from typing import List, Dict
-from langchain_core.messages import HumanMessage
-from langchain_core.messages import ToolMessage
 import warnings
 warnings.filterwarnings("ignore")
 import logging
@@ -42,20 +40,31 @@ tools.append(extract_video_id)
 @tool
 def fetch_transcript(video_id: str, language: str = "en") -> str:
     """
-    Fetches the transcript of a YouTube video.
-    Args:
-        video_id (str): The YouTube video ID (e.g., "dQw4w9WgXcQ").
-        language (str): Language code for the transcript (e.g., "en", "es").
-    Returns:
-        str: The transcript text or an error message.
+    Fetch a limited transcript of a YouTube video.
     """
-    
     try:
         ytt_api = YouTubeTranscriptApi()
-        transcript = ytt_api.fetch(video_id, languages=[language])
-        return " ".join([snippet.text for snippet in transcript.snippets])
-    except Exception as e:
-        return f"Error: {str(e)}"
+        transcript = ytt_api.fetch(
+            video_id,
+            languages=[language],
+        )
+
+        text = " ".join(
+            snippet.text for snippet in transcript.snippets
+        )
+
+        max_chars = 12000
+
+        if len(text) > max_chars:
+            text = text[:max_chars]
+            text += (
+                "\n\n[Transcript truncated because it was too long.]"
+            )
+
+        return text
+
+    except Exception as error:
+        return f"Error: {error}"
 
 tools.append(fetch_transcript)
 
