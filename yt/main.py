@@ -69,31 +69,115 @@ tools.append(fetch_transcript)
 @tool
 def search_youtube(query: str) -> List[Dict[str, str]]:
     """
-    Search YouTube for videos matching the query.
-    
-    Args:
-        query (str): The search term to look for on YouTube
+        Search YouTube for videos matching the query.
         
-    Returns:
-        List of dictionaries containing video titles and IDs in format:
-        [{'title': 'Video Title', 'video_id': 'abc123'}, ...]
-        Returns error message if search fails
+        Args:
+            query (str): The search term to look for on YouTube
+            
+        Returns:
+            List of dictionaries containing video titles and IDs in format:
+            [{'title': 'Video Title', 'video_id': 'abc123'}, ...]
+            Returns error message if search fails
     """
     try:
-        s = Search(query)
+        options = {
+            "quiet": True,
+            "no_warnings": True,
+            "extract_flat": True,
+            "skip_download": True,
+        }
+
+        with yt_dlp.YoutubeDL(options) as ydl:
+            result = ydl.extract_info(
+                f"ytsearch5:{query}",
+                download=False,
+            )
+
         return [
             {
-                "title": yt.title,
-                "video_id": yt.video_id,
-                "url": f"https://youtu.be/{yt.video_id}"
+                "title": video.get("title", ""),
+                "video_id": video.get("id", ""),
+                "url": video.get("url", ""),
             }
-            for yt in s.results
+            for video in result.get("entries", [])
         ]
-    except Exception as e:
-        return f"Error: {str(e)}"
+
+    except Exception as error:
+        return [{"error": str(error)}]
 
 
 tools.append(search_youtube)
+
+@tool
+def get_full_metadata(url:str) -> Dict[str, str]:
+    """
+    Fetch full metadata for a YouTube video given its URL.
+    Args:
+        url (str): The YouTube video URL.
+    Returns:
+        Dictionary containing video metadata or an error message.
+    """
+    try:
+        options = {
+            "quiet": True,
+            "no_warnings": True,
+            "extract_flat": True,
+            "skip_download": True,
+        }
+
+        with yt_dlp.YoutubeDL(options) as ydl:
+            info = ydl.extract_info(url, download=False)
+
+        return {
+            'title': info.get('title'),
+            'views': info.get('view_count'),
+            'duration': info.get('duration'),
+            'channel': info.get('uploader'),
+            'likes': info.get('like_count'),
+            'comments': info.get('comment_count'),
+            'chapters': info.get('chapters', [])
+        }
+
+    except Exception as error:
+        return {"error": str(error)}
+
+@tool
+def get_thumbnails(url: str) -> List[Dict]:
+    """
+    Fetches the thumbnails of a YouTube video given its URL.
+    Args:
+        url (str): The YouTube video URL.
+    Returns:
+        List of dictionaries containing thumbnail URLs and their resolutions or an error message.
+    """
+    try:
+        options = {
+            "quiet": True,
+            "no_warnings": True,
+            "extract_flat": True,
+            "skip_download": True,
+        }
+
+        with yt_dlp.YoutubeDL(options) as ydl:
+            info = ydl.extract_info(url, download=False)
+
+            thumbnails = []
+            for t in info.get('thumbnails', []):
+                if 'url' in t:
+                    thumbnails.append({
+                        "url": t['url'],
+                        "width": t.get('width'),
+                        "height": t.get('height'),
+                        "resolution": f"{t.get('width', '')}x{t.get('height', '')}".strip('x')
+                    })
+            return thumbnails
+
+    except Exception as error:
+        return [{"error": str(error)}]
+
+tools.append(get_full_metadata)
+tools.append(get_thumbnails)
+
 
 print(search_youtube.invoke({"query":"Python programming"}))
 
