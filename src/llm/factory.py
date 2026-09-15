@@ -3,7 +3,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
 from langchain_openrouter import ChatOpenRouter
 from langchain_xai import ChatXAI
-
+from langchain_groq import ChatGroq
 from config import get_settings
 
 
@@ -61,10 +61,11 @@ def get_llm(
             max_tokens=settings.llm_max_tokens,
         )
     if selected_provider == "groq":
-        return ChatOpenAI(
+        if not settings.groq_api_key:
+            raise ValueError("GROQ_API_KEY is missing")
+        return ChatGroq(
             model=model or settings.groq_model,
             api_key=settings.groq_api_key,
-            base_url="https://api.groq.com/openai/v1",
             temperature=settings.llm_temperature,
             max_tokens=settings.llm_max_tokens,
         )
